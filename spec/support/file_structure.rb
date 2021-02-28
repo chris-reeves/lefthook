@@ -8,6 +8,11 @@ class FileStructure
 
     def have_git
       FileUtils.mkdir_p(File.join(tmp, '.git', 'hooks'))
+      # Needed to make git think this is an actual repo. The git command is
+      # used to determine the location of the .git directory, for example.
+      FileUtils.mkdir_p(File.join(tmp, '.git', 'objects'))
+      FileUtils.mkdir_p(File.join(tmp, '.git', 'refs'))
+      File.write(File.join(tmp, '.git', 'HEAD'), "ref: refs/heads/master")
     end
 
     def make_scripts_preset
