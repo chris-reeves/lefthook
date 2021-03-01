@@ -214,9 +214,33 @@ commit-msg:
 
 When you try to commit `git commit -m "haha bad commit text"` script `template_checker` will be executed. Since commit text doesn't match the described pattern the commit process will be interrupted.
 
-## Local config
+## Config files
 
-We can use `lefthook-local.yml` as local config. Options in this file will overwrite options in `lefthook.yml`. (Don't forget to add this file to `.gitignore`)
+### Main config
+
+The main config file for lefthook is `lefthook.yml`, which must be located
+at the root of your git repo. This file would usually be committed and thus
+shared by other developers on the project.
+
+### Local config
+
+Lefthook config can be overridden locally by using `lefthook-local.yml`.
+Options in this file will override options in `lefthook.yml`. As these are
+intended as local overrides, you should probably add this file to
+`.gitignore`.
+
+### Extends option
+
+If you need to extend config from some another place, just add top level:
+```yml
+# lefthook.yml
+
+extends:
+  - $HOME/work/lefthook-extend.yml
+  - $HOME/work/lefthook-extend-2.yml
+```
+NOTE: Filenames specified under the `extends` keyword must be unique (and
+cannot be either `lefthook.yml` or `lefthook-local.yml`).
 
 ## Skipping commands
 
@@ -275,17 +299,6 @@ database:
     3_seed:
       run: rake db:seed
 ```
-
-## Extends option
-If you need to extend config from some another place, just add top level:
-```yml
-# lefthook.yml
-
-extends: 
-  - $HOME/work/lefthook-extend.yml
-  - $HOME/work/lefthook-extend-2.yml
-```
-NOTE: Files for extend should have name NOT a "lefthook.yml" and should be unique.
 
 ## Referencing commands from lefthook.yml
 
