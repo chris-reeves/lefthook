@@ -488,14 +488,39 @@ source_dir_local: ".lefthook-local"
 
 Enable `CI` env variable if it doens't exists on your service by default.
 
-## Disable colors
 
-By agrs:
+## Output control
+
+### Make lefthook less verbose
+
+By default lefthook can be quite verbose, producing output as each command is
+processed (whether skipped, successful or failed), followed at the end by a
+status summary of all the commands that were actually run.
+
+This output can be controlled using the `skip_output` config key. It takes an
+array of output classes to skip, including:
+* *meta* - version information, and which hook is running
+* *success* - any output from runners with an exit code of 0 (success)
+
+To make lefthook as quiet as possible:
+```yml
+# lefthook.yml
+
+skip_output:
+  - meta
+  - success
+```
+
+### Disable colors
+
+Using args:
 ```bash
 lefthook --no-colors run pre-commit
 ```
-By config `lefthook.yml`, just add the option:
+Using config:
 ```yml
+# lefthook.yml
+
 colors: false
 ```
 
