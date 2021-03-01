@@ -1,40 +1,14 @@
 ## Installation
 
-Add Lefthook to your system or build it from sources.
+You can add Lefthook to your system via packages or build it from sources.
 
-### go
+* [Node.js](./node.md)
+* [Ruby](./ruby.md)
+* [Other environments](./other.md)
 
-```bash
-go get github.com/Arkweid/lefthook
-```
-
-### npm
-
-```bash
-npm i @arkweid/lefthook --save-dev
-# or yarn:
-yarn add -D @arkweid/lefthook
-```
-
-NOTE: if you install it this way you should call it with `npx` or `yarn` for all listed examples below. (for example: `lefthook install` -> `npx lefthook install`)
-
-### Rubygems
-
-```bash
-gem install lefthook
-```
-
-### Homebrew for macOS
-
-```bash
-brew install Arkweid/lefthook/lefthook
-```
-
-### AUR for Arch
-
-You can install lefthook [package](https://aur.archlinux.org/packages/lefthook) from AUR
-
-Or take it from [binaries](https://github.com/Arkweid/lefthook/releases) and install manually
+NOTE: if you install Lefthook via NPM then you should call it via `npx` or
+`yarn` in all the examples below. For example: `lefthook install` -> `npx
+lefthook install`
 
 ## Scenarios
 

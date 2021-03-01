@@ -8,6 +8,8 @@ Lefthook is [available on npm](https://www.npmjs.com/package/@arkweid/lefthook) 
 
 ```bash
 npm install @arkweid/lefthook --save-dev
+# or yarn:
+yarn add -D @arkweid/lefthook
 ```
 
 ## Edit
