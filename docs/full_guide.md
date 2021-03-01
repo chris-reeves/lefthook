@@ -242,10 +242,13 @@ extends:
 NOTE: Filenames specified under the `extends` keyword must be unique (and
 cannot be either `lefthook.yml` or `lefthook-local.yml`).
 
+
 ## Skipping commands
 
-You can skip commands by `skip` option:
+### Skipping specific commands
 
+You can prevent certain commands from running by setting `skip` to true in
+your config file:
 ```yml
 # lefthook-local.yml
 
@@ -255,12 +258,12 @@ pre-push:
       skip: true
 ```
 
-## Skipping commands by tags
+### Skipping commands by tags
 
-If we have a lot of commands and scripts we can tag them and run skip commands with a specific tag.
+If we have a lot of commands and scripts then we can apply tags and then skip
+commands with a specific tag.
 
-For example, if we have `lefthook.yml` like this:
-
+For example, if we have a `lefthook.yml` like this:
 ```yml
 # lefthook.yml
 
@@ -273,15 +276,30 @@ pre-push:
       tags: backend security
       run: bundle audit
 ```
-
-You can skip commands by tags:
-
+then we can skip all commands tagged 'frontend':
 ```yml
 # lefthook-local.yml
 
 pre-push:
   exclude_tags:
     - frontend
+```
+
+### Skipping commands by tags (on the fly)
+
+In addition to specifying tags to skip via config (such as
+`lefthook-local.yml`), it is also possible to disable a list of tag groups on
+the fly using the `LEFTHOOK_EXCLUDE` environment variable:
+```bash
+LEFTHOOK_EXCLUDE=frontend,security git commit -am "Skip some tag checks"
+```
+
+### Skipping lefthook execution entirely
+
+To completely disable lefthook for the current git operation, simply set the
+environment variable `LEFTHOOK` to zero:
+```bash
+LEFTHOOK=0 git commit -am "Lefthook skipped"
 ```
 
 ## Piped option
@@ -422,22 +440,6 @@ pre-commit:
   commands:
     govet:
       skip: true
-```
-
-## Skip lefthook execution
-
-We can set env variable `LEFTHOOK` to zero for that
-
-```bash
-LEFTHOOK=0 git commit -am "Lefthook skipped"
-```
-
-## Skip some tags on the fly
-
-Use LEFTHOOK_EXCLUDE={list of tags to be excluded} for that
-
-```bash
-LEFTHOOK_EXCLUDE=ruby,security git commit -am "Skip some tag checks"
 ```
 
 ## Concurrent files overrides
