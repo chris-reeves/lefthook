@@ -10,40 +10,34 @@ NOTE: if you install Lefthook via NPM then you should call it via `npx` or
 `yarn` in all the examples below. For example: `lefthook install` -> `npx
 lefthook install`
 
-## Scenarios
 
-### Examples
-
-We have a directory with few examples. You can check it [here](https://github.com/Arkweid/lefthook/tree/master/examples).
+## Getting started
 
 ### First time user
 
-Initialize lefthook with the following command
-
+Initialize lefthook with the following command:
 ```bash
 lefthook install
 ```
+which will create `lefthook.yml` in the project root directory.
 
-It creates `lefthook.yml` in the project root directory
-
-Register your hook (You can choose any hook from [this list](https://git-scm.com/docs/githooks))
-In our example it `pre-push` githook:
-
+Register your hook (you can choose any hook from [this
+list](https://git-scm.com/docs/githooks)). In our example we choose a
+`pre-push` hook:
 ```bash
 lefthook add pre-push
 ```
 
-Describe pre-push commands in `lefthook.yml`:
-
+Finally, describe pre-push commands in `lefthook.yml`:
 ```yml
-pre-push: # githook name
-  commands: # list of commands
-    packages-audit: # command name
-      run: yarn audit # command for execution
+pre-push:               # githook name
+  commands:             # list of commands
+    packages-audit:     # command name
+      run: yarn audit   # command for execution
 ```
 
-That's all! Now on `git push` the `yarn audit` command will be run.
-If it fails the `git push` will be interrupted.
+That's all! Now on `git push` the `yarn audit` command will be run. If it
+fails then the `git push` will be interrupted.
 
 ### If you already have a lefthook config file
 
@@ -52,6 +46,12 @@ Just initialize lefthook to make it work :)
 ```bash
 lefthook install
 ```
+
+### Examples
+
+We have a directory with a few examples. You can check it out
+[here](../examples).
+
 
 ## More options
 
