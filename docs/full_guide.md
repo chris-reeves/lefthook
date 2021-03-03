@@ -217,6 +217,70 @@ NOTE: Filenames specified under the `extends` keyword must be unique (and
 cannot be either `lefthook.yml` or `lefthook-local.yml`).
 
 
+## Runners
+
+Lefthook supports two kinds of 'runners' - `scripts` and `commands`. `scripts`
+are just that - script files that are stored in the repo (typically under
+`.lefthook/<hook>`) - while `commands` are defined entirely within config.
+
+### Execution order
+
+By default all runners will be executed in a defined sequence, regardless of
+the success or failure of previous runners. The order of execution is:
+1. scripts in the main script directory (`.lefthook/<hook>`), sorted by
+   filename;
+2. scripts in the local script directory (`.lefthook-local/<hook>`), sorted by
+   filename;
+3. commands, in the order they appear in config files (first `lefthook.yml`,
+   then `lefthook-local.yml`, then any files listed under the `extends` config
+   key).
+
+#### Parallel execution
+
+You can enable parallel execution if you want to speed up your checks. Runners
+will be kicked off in the same order as before, but will execute in parallel.
+This must be enabled individually for each hook, by setting `parallel: true`.
+This option is mutually exclusive with the `piped` option.
+
+```yml
+# lefthook.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    rubocop:
+      run: bundle exec rubocop --parallel
+    danger:
+      run: bundle exec danger
+    eslint-assets:
+      run: yarn eslint --ext .es6 app/assets/javascripts
+    eslint-test:
+      run: yarn eslint --ext .es6 test/javascripts
+```
+
+#### Piped execution
+
+You can enable piped execution if later runners depend upon previous runners
+executing successfully. If any runner in the sequence fails, subsequent
+runners will not be executed. This must be enabled individually for each hook,
+by setting `piped: true`. This option is mutually exclusive with the
+`parallel` option.
+
+```yml
+# lefthook.yml
+
+database:
+  piped: true
+  commands:
+    1_create:
+      run: rake db:create
+    2_migrate:
+      run: rake db:migrate
+    3_seed:
+      run: rake db:seed
+```
+
+
 ## Skipping commands
 
 ### Skipping specific commands
@@ -276,22 +340,6 @@ environment variable `LEFTHOOK` to zero:
 LEFTHOOK=0 git commit -am "Lefthook skipped"
 ```
 
-## Piped option
-If any command in the sequence fails, the other will not be executed.
-```yml
-# lefthook.yml
-
-database:
-  piped: true
-  commands:
-    1_create:
-      run: rake db:create
-    2_migrate:
-      run: rake db:migrate
-    3_seed:
-      run: rake db:seed
-```
-
 ## Referencing commands from lefthook.yml
 
 If you have the following config
@@ -324,9 +372,8 @@ pre-commit:
 lefthook run pre-commit
 ```
 
-## Parallel execution
+## Custom command groups
 
-You can enable parallel execution if you want to speed up your checks.
 Lets get example from [discourse](https://github.com/discourse/discourse/blob/master/.travis.yml#L77-L83) project.
 
 ```
