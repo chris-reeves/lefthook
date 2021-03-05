@@ -217,6 +217,77 @@ NOTE: Filenames specified under the `extends` keyword must be unique (and
 cannot be either `lefthook.yml` or `lefthook-local.yml`).
 
 
+## Command groups
+
+With the exception of a few global options, most of a lefthook config file
+consists of defining command groups. These are sets of commands (technically
+'runners', which could be either `commands` or `scripts`) which are executed
+together when the command group is called.
+
+### Git hook groups
+
+Typically a command group is named after a git hook, and executed
+automatically by that hook. In order for a hook to fire, git must know to call
+lefthook, and the hook must be defined in `lefthook.yml`.
+
+For a repo with an existing lefthook config, `lefthook install` is all that is
+needed to configure git for all the hooks specified in the lefthook config
+file.
+
+If you need to add a new hook to an existing config, you must register the
+hook with git:
+```bash
+lefthook add pre-push
+```
+and then define a command group in `lefthook.yml`:
+```yml
+pre-push:
+  commands:
+    packages-audit:
+      run: yarn audit
+```
+
+### Run git hook groups directly
+
+You don't have to wait for a git hook to fire to run your command groups. You
+can call them directly using:
+```bash
+lefthook run pre-commit
+```
+
+Note that calling a git hook group directly will not include git args (but
+will handle globs and file groups, where appropriate).
+
+### Custom groups
+
+It is also possible to create command groups that don't correspond to git
+hooks. These are simply named groups of commands that can be run using
+`lefthook run`. The following example is an excerpt from the
+[discourse](https://github.com/discourse/discourse/blob/master/lefthook.yml#L49)
+lefthook config.
+```yml
+# lefthook.yml
+
+lints:
+  parallel: true
+  commands:
+    rubocop:
+      run: bundle exec rubocop --parallel
+    prettier:
+      glob: "*.{js,es6}"
+      include: "app/assets/javascripts|test/javascripts"
+      run: yarn pprettier --list-different {all_files}
+    eslint-assets-es6:
+      run: yarn eslint --ext .es6 app/assets/javascripts
+    eslint-assets-js:
+      run: yarn eslint app/assets/javascripts
+```
+
+This command group will only ever run if it is called directly:
+```bash
+lefthook run lints
+```
+
 ## Runners
 
 Lefthook supports two kinds of 'runners' - `scripts` and `commands`. `scripts`
@@ -365,56 +436,6 @@ pre-commit:
 ```
 
 `{cmd}` - shorthand for the command from `lefthook.yml`
-
-## Run githook group directly
-
-```bash
-lefthook run pre-commit
-```
-
-## Custom command groups
-
-Lets get example from [discourse](https://github.com/discourse/discourse/blob/master/.travis.yml#L77-L83) project.
-
-```
-bundle exec rubocop --parallel && \
-bundle exec danger && \
-yarn eslint --ext .es6 app/assets/javascripts && \
-yarn eslint --ext .es6 test/javascripts && \
-yarn eslint --ext .es6 plugins/**/assets/javascripts && \
-yarn eslint --ext .es6 plugins/**/test/javascripts && \
-yarn eslint app/assets/javascripts test/javascripts
-```
-
-Rewrite it in lefthook custom group. We call it `lint`:
-
-```yml
-# lefthook.yml
-
-lint:
-  parallel: true
-  commands:
-    rubocop:
-      run: bundle exec rubocop --parallel
-    danger:
-      run: bundle exec danger
-    eslint-assets:
-      run: yarn eslint --ext .es6 app/assets/javascripts
-    eslint-test:
-      run: yarn eslint --ext .es6 test/javascripts
-    eslint-plugins-assets:
-      run: yarn eslint --ext .es6 plugins/**/assets/javascripts
-    eslint-plugins-test:
-      run: yarn eslint --ext .es6 plugins/**/test/javascripts
-    eslint-assets-tests:
-      run: yarn eslint app/assets/javascripts test/javascripts
-```
-
-Then call this group directly:
-
-```
-lefthook run lint
-```
 
 ## Complete example
 
