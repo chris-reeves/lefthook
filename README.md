@@ -96,7 +96,7 @@ pre-commit:
 
 * ### **Run scripts**
 
-If oneline commands are not enough, you can execute files. [Example](./docs/full_guide.md#bash-script-example).
+If oneline commands are not enough, you can execute files. [Example](./docs/full_guide.md#example-script).
 
 ```yml
 commit-msg:

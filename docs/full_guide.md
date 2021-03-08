@@ -131,63 +131,6 @@ commit-msg:
 
 `{i}` - shorthand for the i-th Git hook argument
 
-## Managing scripts
-
-If you run `lefthook add` command with `-d` flag, lefthook will create two directories where you can put scripts and reference them from `lefthook.yml` file.
-
-Example:
-Let's create `commit-msg` hook with `-d` flag
-
-```bash
-lefthook add -d commit-msg
-```
-
-This command will create `.lefthook/commit-msg` and `.lefthook-local/commit-msg` dirs.
-
-The first one is for common project level scripts.
-The second one is for personal scripts. It would be a good idea to add dir`.lefthook-local` to `.gitignore`.
-
-Create scripts `.lefthook/commit-msg/hello.js` and `.lefthook/commit-msg/hi.rb`
-
-```yml
-# lefthook.yml
-
-commit-msg:
-  scripts:
-    "hello.js":
-      runner: node
-    "hi.rb":
-      runner: ruby
-```
-
-### Bash script example
-
-Let's create a bash script to check commit templates `.lefthook/commit-msg/template_checker`:
-
-```bash
-INPUT_FILE=$1
-START_LINE=`head -n1 $INPUT_FILE`
-PATTERN="^(TICKET)-[[:digit:]]+: "
-if ! [[ "$START_LINE" =~ $PATTERN ]]; then
-  echo "Bad commit message, see example: TICKET-123: some text"
-  exit 1
-fi
-```
-
-Now we can ask lefthook to run our bash script by adding this code to
-`lefthook.yml` file:
-
-```yml
-# lefthook.yml
-
-commit-msg:
-  scripts:
-    "template_checker":
-      runner: bash
-```
-
-When you try to commit `git commit -m "haha bad commit text"` script `template_checker` will be executed. Since commit text doesn't match the described pattern the commit process will be interrupted.
-
 ## Config files
 
 ### Main config
@@ -352,6 +295,104 @@ database:
 ```
 
 
+## Scripts
+
+If the task you need to execute is more than a one-liner then you have the
+option to create and execute arbitrary scripts.
+
+Lefthook looks for scripts in subdirectories of the `.lefthook` and
+`.lefthook-local` directories by default (both relative to the repository
+root). The first is for common project level scripts, while the second is for
+local scripts. You probably want to add `.lefthook-local` to `.gitignore`.
+
+Within these directories the scripts themselves are stored in directories named
+after the command group they are called by. These directories will be created
+automatically if you run `lefthook add` with the `-d` flag. For example
+`lefthook add -d commit-msg` will create the `.lefthook/commit-msg` and
+`.lefthook-local/commit-msg` directories.
+
+The name of the script should match the script name in the lefthook config
+file (it won't be executed unless there's a matching entry in the config
+file). Scripts are defined under the `scripts` keyword for a given command
+group. Although not strictly required (if your script meets certain
+requirements), you will likely need to define a `runner` for your script. This
+is the binary that will execute your script, such as `bash`, `node` or `ruby`.
+
+For example, having run the `lefthook add` command above you could create the
+scripts `.lefthook/commit-msg/hello.js` and `.lefthook/commit-msg/hi.rb`. The
+following config file would then call these when the `commit-msg` hook fires:
+```yml
+# lefthook.yml
+
+commit-msg:
+  scripts:
+    "hello.js":
+      runner: node
+    "hi.rb":
+      runner: ruby
+```
+
+### Using git hook parameters in scripts
+
+Some git hooks are passed parameters when they are called. Lefthook passes
+these on to called scripts by appending them to the argument list. They can be
+accessed in the same way as any other command line arguments in your scripting
+language of choice. The following example is for a
+[`prepare-commit-msg`](https://git-scm.com/docs/githooks#_prepare_commit_msg)
+hook:
+```bash
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+# ...
+```
+
+### Storing scripts in a different directory
+
+The directories in which lefthook looks for scripts can be changed from the
+defaults of `.lefthook` and `.lefthook-local` by setting the global options
+`source_dir` and `source_dir_local`:
+```yml
+# lefthook.yml
+
+source_dir: "lefthook-scripts"
+source_dir_local: "lefthook-scripts.local"
+```
+
+### Example script
+
+The following example bash script checks that commit messages match an
+expected template format, reading in the name of the file holding the proposed
+commit message from the git hook parameters for the
+[`commit-msg`](https://git-scm.com/docs/githooks#_commit_msg) hook:
+```bash
+INPUT_FILE=$1
+START_LINE=`head -n1 $INPUT_FILE`
+PATTERN="^(TICKET)-[[:digit:]]+: "
+if ! [[ "$START_LINE" =~ $PATTERN ]]; then
+  echo "Bad commit message, see example: TICKET-123: some text"
+  exit 1
+fi
+```
+
+Storing the above script in `.lefthook/commit-msg/template_checker`, we can
+trigger lefthook to run it by adding the following config:
+```yml
+# lefthook.yml
+
+commit-msg:
+  scripts:
+    "template_checker":
+      runner: bash
+```
+
+When you try to commit using a poorly formatted commit message (e.g. `git
+commit -m "haha bad commit text"`) the `template_checker` script will be
+executed. Since the commit message doesn't match the template pattern the
+commit will be aborted.
+
+
 ## Skipping commands
 
 ### Skipping specific commands
@@ -501,29 +542,6 @@ frontend-tests:
 frontend-typings:
   glob: "**/*.js"
   run: flock -s webpack/application/typings/graphql-schema.json yarn run flow focus-check {files}
-```
-
-## Capture ARGS from git in the script
-
-Example script for `prepare-commit-msg` hook:
-
-```bash
-COMMIT_MSG_FILE=$1
-COMMIT_SOURCE=$2
-SHA1=$3
-
-# ...
-```
-
-## Change directory for script files
-
-You can do this through this config keys:
-
-```yml
-# lefthook.yml
-
-source_dir: ".lefthook"
-source_dir_local: ".lefthook-local"
 ```
 
 ## CI integration
